@@ -26,8 +26,9 @@ public class AutocompController {
     @GetMapping("/autocomp/")
     public List<String> getAutocomp(
             @RequestParam @NotBlank String prefix,
+            @RequestParam(defaultValue = "default") String groupname,
             @RequestParam Optional<@Min(1) Integer> max
             ) {
-        return autocompService.getAutocomp(prefix, max);
+        return autocompService.getAutocomp(prefix, groupname, max);
     }
 }
