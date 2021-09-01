@@ -2,13 +2,22 @@ package com.example.autocomp.logic;
 
 import com.google.common.base.Strings;
 
+import java.text.Normalizer;
 import java.util.*;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 
 public class PrefixTree {
+    private Function<String, String> normalizer;
     private LetterNode head;
 
-    public PrefixTree() {
+    public PrefixTree(Function<String, String>  normalizer) {
+        this.normalizer = normalizer;
         this.head = new LetterNode();
+    }
+
+    public PrefixTree() {
+        this(PrefixTree::defaultNormalize);
     }
 
     public void addWords(List<String> words) {
@@ -18,21 +27,21 @@ public class PrefixTree {
     }
 
     public void addWord(String word) {
-        // TODO: normalize word
+        String normalWord = this.normalizer.apply(word);
 
-        if (Strings.isNullOrEmpty(word)) {
+        if (Strings.isNullOrEmpty(normalWord)) {
             return;
         }
 
         LetterNode currNode = this.head;
 
-        for (char letter : word.toCharArray()) {
+        for (char letter : normalWord.toCharArray()) {
             LetterNode nextLetter = new LetterNode();
             LetterNode nextOrNull = currNode.next.putIfAbsent(letter, nextLetter);
             currNode = nextOrNull == null ? nextLetter : nextOrNull;
         }
 
-        currNode.completeWord = Optional.of(word);
+        currNode.completeWord = Optional.of(normalWord);
     }
 
     public List<String> getAllCompleteWords() {
@@ -40,15 +49,21 @@ public class PrefixTree {
     }
 
     public List<String> getCompleteWordsAfterPrefix(String prefix, Optional<Integer> max) {
-        // TODO: normalize prefix
+        String normalPrefix = this.normalizer.apply(prefix);
 
-        Optional<LetterNode> prefixNode = findNodeByWord(prefix);
+        Optional<LetterNode> prefixNode = findNodeByWord(normalPrefix);
 
         if (!prefixNode.isPresent()) {
             return new ArrayList<>();
         }
 
-        return this.getCompleteWordsFromNode(prefixNode.get(), max);
+        var completeWords = this.getCompleteWordsFromNode(prefixNode.get(), max);
+
+        // Replace normalized prefix with the original
+        completeWords = completeWords.stream().map(
+                word -> word.replaceFirst(Pattern.quote(normalPrefix), prefix)).toList();
+
+        return completeWords;
     }
 
     private Optional<LetterNode> findNodeByWord(String word) {
@@ -103,6 +118,12 @@ public class PrefixTree {
         }
 
         return completeWords;
+    }
+
+    public static String defaultNormalize(String text) {
+        String finalText = text.trim().toLowerCase();
+        finalText = Normalizer.normalize(finalText, Normalizer.Form.NFD);
+        return finalText;
     }
 }
 

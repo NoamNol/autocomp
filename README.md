@@ -4,7 +4,7 @@ Auto-complete with Spring Boot
 ## Usage
 
 ### Auto-complete
-Get all words by prefix:
+Get all words by prefix (Ignore case):
 </br>
 `http://localhost:8080/api/v1/autocomp/?prefix=<prefix>`
 
