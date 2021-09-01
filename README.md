@@ -31,6 +31,17 @@ Result:
 ]
 ```
 
+The search is case-insensitive, but the original prefix is used in the results:
+</br>
+`http://localhost:8080/api/v1/autocomp/?prefix=iSrA&groupname=country`
+
+Result:
+```json
+[
+    "iSrAel"
+]
+```
+
 ### Words
 Get all known words:
 </br>
